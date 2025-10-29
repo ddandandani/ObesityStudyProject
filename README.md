@@ -23,6 +23,7 @@ It includes **2,111 records** and **17 attributes** describing dietary patterns,
 
 ## Dimensions
 | Description | Count |
+|--------------|-------|
 | Observations (rows) | 2,111 |
 | Variables (columns) | 18 (17 predictors + 1 outcome) |
 
@@ -46,6 +47,7 @@ Each row corresponds to a **single survey respondent**, aged **14 – 61**, who 
 
 ## File List
 | File | Description |
+|------|--------------|
 | `obesity.csv` | Main dataset in CSV format |
 | `CODEBOOK.md` | Detailed variable definitions and value levels |
 | `README.md` | This summary file |
