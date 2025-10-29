@@ -1,0 +1,117 @@
+---
+title: "DS 210 Project Proposal — Obesity Levels Estimation"
+subtitle: "Introduction & EDA Plan"
+author: "Daniela Montanez"
+date: "10/28/2025"
+output:
+  html_document:
+    theme: journal
+---
+
+In this project I will analyze the *Obesity Levels Estimation* dataset to explore which self-reported lifestyle factors are most associated with being in an obesity category (vs. normal weight). The dataset has 2,111 records from Mexico, Peru, and Colombia and includes diet, hydration, activity, technology use, demographics, height, and weight. 
+
+This dataset was collected via an online survey of adults from Mexico, Peru, and Colombia that captured self-reported lifestyle, demographic, and anthropometric information. Each row represents one individual participant, and each column represents a variable such as diet habits, physical activity, technology use, or measured body metrics. 
+
+Primary references: UC Irvine ML Repository (dataset page) and Data in Brief article
+
+#Packages
+
+
+
+```{r libraries}
+library(tidyverse)
+library(janitor)
+```
+
+
+#The data
+
+```{r read-data, message=FALSE}
+obesity <- read_csv("data/ObesityDataSet_raw_and_data_sinthetic.csv")
+```
+
+#Research Question 
+
+**Among adults in Mexico, Peru, and Colombia in this survey, which lifestyle factors are most strongly associated with belonging to an obesity category (vs. normal weight), and to what wextent do vegetable consumption (FCVC) and physical activity (FAF) appear protective after accounting for age, gender, and technology use (TUE)?**
+
+#Wranglings 
+
+```{r clean-names}
+obesity_clean <- obesity |> clean_names() 
+```
+
+```{r overview-of-data}
+glimpse(obesity_clean)
+```
+
+#Visualizations for single variables
+
+
+```{r obesity-levels}
+ggplot(obesity_clean, aes(y = n_obeyesdad)) +
+  geom_bar() +
+  labs(title = "Distribution of Obesity Levels",
+       x = "Count", y = "Obesity Category") +
+  theme_minimal()
+```
+**This visualization helps me understand the overall structure of the dataset by showing how many observations fall into each obesity category. It immediately reveals that the categories are balanced, each bar has roughly the same height. From this, I can confirm that I will not need to apply any class-balancing methods during analysis.
+
+At the same time, I notice that the category names (for example, *Overweight_Level_I*, *Obesity_Type_II*, etc.) are written with underscores instead of spaces. Cleaning these names into a more readable format (e.g., “Overweight Level I”) would make future plots and tables easier to interpret. I can do this later by using the `str_replace_all()` function or `fct_recode()` in R to relabel the factor levels more cleanly.
+**
+```{r family-data}
+family_data <- obesity_clean %>%
+  count(family_history_with_overweight) %>%
+  mutate(percentage = n / sum(n) * 100)
+```
+
+
+```{r categorical-variable}
+ggplot(family_data, aes(x = "", y = percentage, fill = family_history_with_overweight)) +
+  geom_col(width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  labs(title = "Family History of Overweight",
+       fill = "Family History",
+       y = "Percentage") +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")),
+            position = position_stack(vjust = 0.5),
+            color = "white", size = 4) +
+  theme_void()
+```
+
+**This pie chart shows the proportion of individuals who reported having a family history of overweight. The majority of participants (about 82%) indicated “Yes,” while only 18% reported “No.” This visualization helps me understand that most individuals in the dataset come from families with a history of overweight, suggesting that genetic or familial factors may play a significant role in the sample’s obesity outcomes. This insight is important for my later analysis, as family history could serve as a strong explanatory variable when modeling obesity levels.  
+
+From a data cleaning perspective, I also notice that the labels appear in lowercase (“yes” and “no”). To make future visualizations more professional and readable, I can reformat these values into title case (“Yes” and “No”) using functions like `mutate()`or `recode()` in R.
+**
+
+#Visualization for 2 or more variables 
+```{r}
+ggplot(obesity_clean, aes(y = n_obeyesdad, x = weight, fill = n_obeyesdad)) +
+  geom_boxplot() +
+  labs(
+    title = "Distribution of Weight Across Obesity Categories",
+    y = "Obesity Category",
+    x = "Weight (kg)",
+
+  ) +
+  theme_minimal()
+```
+
+**This boxplot displays the distribution of individuals’ weight across different obesity categories.
+Each box represents the weight range for one category, showing the median, quartiles, and potential 
+outliers. The visualization clearly shows that as the obesity category increases—from *Insufficient 
+Weight* and *Normal Weight* to *Obesity Type III*—the median weight also rises consistently. This 
+confirms that the dataset’s labeling of obesity levels aligns logically with the recorded body 
+weights, providing a useful validation of data consistency.
+
+This visualization helps me understand how the *weight* variable differentiates individuals across 
+obesity categories and demonstrates that weight is a strong numerical predictor of obesity level. It 
+also highlights some variability within each group, which suggests that other lifestyle factors (such 
+as diet or activity level) may influence an individual’s placement in a category.  
+
+From a data cleaning perspective, I can see that the category names contain underscores (e.g., 
+
+*Obesity_Type_I*). In future steps, I plan to replace underscores with spaces for better 
+readability 
+in plots and summaries using functions like 
+`forcats::fct_recode()`.
+**
